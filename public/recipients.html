@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Recipients</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a> |
+        <a href="donor_form.html">Add Donor</a> |
+        <a href="recipient_form.html">Add Recipient</a> |
+        <a href="institution_setup_form.html">Add Institution</a> |
+        <a href="record_donation_form.html">Record Donation</a> |
+        <a href="search_form.html">Search</a> |
+        <a href="donors.html">View Donors</a> |
+        <a href="recipients.html">View Recipients</a>
+    </nav>
+
+    <h1>All Recipients</h1>
+
+    <div id="recipientsList"></div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" style="display:none;">
+        <h2>Edit Recipient</h2>
+        <form id="editForm">
+            <input type="hidden" id="edit_id">
+            <div>
+                <label for="edit_f_name">First Name:</label>
+                <input type="text" id="edit_f_name" required>
+            </div>
+            <div>
+                <label for="edit_m_initial">Middle Initial:</label>
+                <input type="text" id="edit_m_initial" maxlength="1">
+            </div>
+            <div>
+                <label for="edit_l_name">Last Name:</label>
+                <input type="text" id="edit_l_name" required>
+            </div>
+            <div>
+                <label for="edit_date_of_birth">Date of Birth:</label>
+                <input type="date" id="edit_date_of_birth" required>
+            </div>
+            <div>
+                <label for="edit_gender">Gender:</label>
+                <select id="edit_gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                </select>
+            </div>
+            <div>
+                <label for="edit_blood_type">Blood Type:</label>
+                <select id="edit_blood_type" required>
+                    <option value="">Select Blood Type</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </div>
+            <div>
+                <label for="edit_phone_number">Phone Number:</label>
+                <input type="tel" id="edit_phone_number" required>
+            </div>
+            <div>
+                <button type="submit">Save</button>
+                <button type="button" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let allRecipients = [];
+
+        async function loadRecipients() {
+            try {
+                const response = await fetch('/api/recipients');
+                allRecipients = await response.json();
+                displayRecipients(allRecipients);
+            } catch (error) {
+                console.error('Error loading recipients:', error);
+                alert('Failed to load recipients');
+            }
+        }
+
+        function displayRecipients(recipients) {
+            const div = document.getElementById('recipientsList');
+
+            if (recipients.length === 0) {
+                div.innerHTML = '<p>No recipients found.</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+            html += '<th>ID</th>';
+            html += '<th>Name</th>';
+            html += '<th>Date of Birth</th>';
+            html += '<th>Gender</th>';
+            html += '<th>Blood Type</th>';
+            html += '<th>Phone</th>';
+            html += '<th>Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            recipients.forEach(recipient => {
+                const fullName = `${recipient.f_name} ${recipient.m_initial || ''} ${recipient.l_name}`.trim();
+                const dob = recipient.date_of_birth ? new Date(recipient.date_of_birth).toLocaleDateString() : 'N/A';
+
+                html += '<tr>';
+                html += `<td>${recipient.recipient_id}</td>`;
+                html += `<td>${fullName}</td>`;
+                html += `<td>${dob}</td>`;
+                html += `<td>${recipient.gender}</td>`;
+                html += `<td>${recipient.blood_type}</td>`;
+                html += `<td>${recipient.phone_number}</td>`;
+                html += `<td>
+                    <button onclick="editRecipient(${recipient.recipient_id})">Edit</button>
+                    <button onclick="deleteRecipient(${recipient.recipient_id})">Delete</button>
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            div.innerHTML = html;
+        }
+
+        async function editRecipient(id) {
+            try {
+                const response = await fetch(`/api/recipients/${id}`);
+                const recipient = await response.json();
+
+                document.getElementById('edit_id').value = recipient.recipient_id;
+                document.getElementById('edit_f_name').value = recipient.f_name || '';
+                document.getElementById('edit_m_initial').value = recipient.m_initial || '';
+                document.getElementById('edit_l_name').value = recipient.l_name || '';
+                document.getElementById('edit_date_of_birth').value = recipient.date_of_birth ? recipient.date_of_birth.split('T')[0] : '';
+                document.getElementById('edit_gender').value = recipient.gender || '';
+                document.getElementById('edit_blood_type').value = recipient.blood_type || '';
+                document.getElementById('edit_phone_number').value = recipient.phone_number || '';
+
+                document.getElementById('editModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading recipient:', error);
+                alert('Failed to load recipient details');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('edit_id').value;
+            const formData = {
+                f_name: document.getElementById('edit_f_name').value,
+                m_initial: document.getElementById('edit_m_initial').value,
+                l_name: document.getElementById('edit_l_name').value,
+                date_of_birth: document.getElementById('edit_date_of_birth').value,
+                gender: document.getElementById('edit_gender').value,
+                blood_type: document.getElementById('edit_blood_type').value,
+                phone_number: document.getElementById('edit_phone_number').value
+            };
+
+            try {
+                const response = await fetch(`/api/recipients/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Recipient updated successfully!');
+                    closeEditModal();
+                    loadRecipients();
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to update recipient');
+                console.error('Error:', error);
+            }
+        });
+
+        async function deleteRecipient(id) {
+            if (!confirm('Are you sure you want to delete this recipient?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/recipients/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Recipient deleted successfully!');
+                    loadRecipients();
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to delete recipient');
+                console.error('Error:', error);
+            }
+        }
+
+        // Load data on page load
+        loadRecipients();
+    </script>
+</body>
+</html>

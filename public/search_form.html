@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Inventory Search Form</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a> |
+        <a href="donor_form.html">Add Donor</a> |
+        <a href="recipient_form.html">Add Recipient</a> |
+        <a href="institution_setup_form.html">Add Institution</a> |
+        <a href="record_donation_form.html">Record Donation</a> |
+        <a href="search_form.html">Search</a> |
+        <a href="donors.html">View Donors</a> |
+        <a href="recipients.html">View Recipients</a>
+    </nav>
+
+    <h1>Blood Inventory Search Form</h1>
+
+    <form id="searchForm">
+        <div>
+            <label for="blood_type">Blood Type:</label>
+            <select id="blood_type" name="blood_type" required>
+                <option value="">Select Blood Type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="bloodbank_id">Blood Bank (optional):</label>
+            <select id="bloodbank_id" name="bloodbank_id">
+                <option value="">All Blood Banks</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="expiration_start">Expiration Start Date:</label>
+            <input type="date" id="expiration_start" name="expiration_start">
+        </div>
+
+        <div>
+            <label for="expiration_end">Expiration End Date:</label>
+            <input type="date" id="expiration_end" name="expiration_end">
+        </div>
+
+        <div>
+            <button type="submit">Search Inventory</button>
+        </div>
+    </form>
+
+    <h2>Search Results</h2>
+    <div id="results"></div>
+
+    <script>
+        // Load blood banks
+        async function loadBloodBanks() {
+            try {
+                const response = await fetch('/api/bloodbanks');
+                const bloodbanks = await response.json();
+                const select = document.getElementById('bloodbank_id');
+
+                bloodbanks.forEach(bb => {
+                    const option = document.createElement('option');
+                    option.value = bb.BloodBank_ID;
+                    option.textContent = bb.BloodBank_name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading blood banks:', error);
+            }
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                blood_type: document.getElementById('blood_type').value,
+                bloodbank_id: document.getElementById('bloodbank_id').value || null,
+                expiration_start: document.getElementById('expiration_start').value || null,
+                expiration_end: document.getElementById('expiration_end').value || null
+            };
+
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to search inventory');
+                console.error('Error:', error);
+            }
+        });
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p>No results found.</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+            html += '<th>Blood ID</th>';
+            html += '<th>Blood Type</th>';
+            html += '<th>Quantity (L)</th>';
+            html += '<th>Expiration Date</th>';
+            html += '<th>Days Until Expiration</th>';
+            html += '<th>Blood Bank</th>';
+            html += '<th>Location</th>';
+            html += '</tr></thead><tbody>';
+
+            results.forEach(row => {
+                html += '<tr>';
+                html += `<td>${row.Blood_ID}</td>`;
+                html += `<td>${row.Blood_Type}</td>`;
+                html += `<td>${row.Quantity_Donated}</td>`;
+                html += `<td>${new Date(row.Expiration_Date).toLocaleDateString()}</td>`;
+                html += `<td>${row.Days_Until_Expiration}</td>`;
+                html += `<td>${row.BloodBank_name}</td>`;
+                html += `<td>${row.Location}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            resultsDiv.innerHTML = html;
+        }
+
+        // Load blood banks when page loads
+        loadBloodBanks();
+    </script>
+</body>
+</html>

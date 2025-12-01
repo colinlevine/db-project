@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institution Setup Form</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a> |
+        <a href="donor_form.html">Add Donor</a> |
+        <a href="recipient_form.html">Add Recipient</a> |
+        <a href="institution_setup_form.html">Add Institution</a> |
+        <a href="record_donation_form.html">Record Donation</a> |
+        <a href="search_form.html">Search</a> |
+        <a href="donors.html">View Donors</a> |
+        <a href="recipients.html">View Recipients</a>
+    </nav>
+
+    <h1>Institution Setup Form</h1>
+
+    <form id="institutionForm">
+        <div>
+            <label for="institution_type">Institution Type:</label>
+            <select id="institution_type" name="institution_type" required>
+                <option value="">-- Select Type --</option>
+                <option value="bloodbank">Blood Bank</option>
+                <option value="hospital">Hospital</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="institution_name">Name:</label>
+            <input type="text" id="institution_name" name="institution_name" required>
+        </div>
+
+        <div>
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
+        </div>
+
+        <div>
+            <label for="phone_number">Phone Number:</label>
+            <input type="tel" id="phone_number" name="phone_number" required>
+        </div>
+
+        <div>
+            <button type="submit">Register Institution</button>
+        </div>
+    </form>
+
+    <script>
+        document.getElementById('institutionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                institution_type: document.getElementById('institution_type').value,
+                institution_name: document.getElementById('institution_name').value,
+                location: document.getElementById('location').value,
+                phone_number: document.getElementById('phone_number').value
+            };
+
+            try {
+                const response = await fetch('/api/institutions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Institution registered successfully!');
+                    document.getElementById('institutionForm').reset();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to register institution');
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Donors</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a> |
+        <a href="donor_form.html">Add Donor</a> |
+        <a href="recipient_form.html">Add Recipient</a> |
+        <a href="institution_setup_form.html">Add Institution</a> |
+        <a href="record_donation_form.html">Record Donation</a> |
+        <a href="search_form.html">Search</a> |
+        <a href="donors.html">View Donors</a> |
+        <a href="recipients.html">View Recipients</a>
+    </nav>
+
+    <h1>All Donors</h1>
+
+    <div id="donorsList"></div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" style="display:none;">
+        <h2>Edit Donor</h2>
+        <form id="editForm">
+            <input type="hidden" id="edit_id">
+            <div>
+                <label for="edit_f_name">First Name:</label>
+                <input type="text" id="edit_f_name" required>
+            </div>
+            <div>
+                <label for="edit_m_initial">Middle Initial:</label>
+                <input type="text" id="edit_m_initial" maxlength="1">
+            </div>
+            <div>
+                <label for="edit_l_name">Last Name:</label>
+                <input type="text" id="edit_l_name" required>
+            </div>
+            <div>
+                <label for="edit_date_of_birth">Date of Birth:</label>
+                <input type="date" id="edit_date_of_birth" required>
+            </div>
+            <div>
+                <label for="edit_phone_number">Phone Number:</label>
+                <input type="tel" id="edit_phone_number" required>
+            </div>
+            <div>
+                <label for="edit_last_donation_date">Last Donation Date:</label>
+                <input type="date" id="edit_last_donation_date">
+            </div>
+            <div>
+                <label for="edit_gender">Gender:</label>
+                <select id="edit_gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                </select>
+            </div>
+            <div>
+                <label for="edit_bb_id">Blood Bank:</label>
+                <select id="edit_bb_id">
+                    <option value="">Select Blood Bank (Optional)</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit">Save</button>
+                <button type="button" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let allDonors = [];
+
+        async function loadDonors() {
+            try {
+                const response = await fetch('/api/donors');
+                allDonors = await response.json();
+                displayDonors(allDonors);
+            } catch (error) {
+                console.error('Error loading donors:', error);
+                alert('Failed to load donors');
+            }
+        }
+
+        function displayDonors(donors) {
+            const div = document.getElementById('donorsList');
+
+            if (donors.length === 0) {
+                div.innerHTML = '<p>No donors found.</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+            html += '<th>ID</th>';
+            html += '<th>Name</th>';
+            html += '<th>Date of Birth</th>';
+            html += '<th>Phone</th>';
+            html += '<th>Last Donation</th>';
+            html += '<th>Gender</th>';
+            html += '<th>Blood Bank</th>';
+            html += '<th>Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            donors.forEach(donor => {
+                const fullName = `${donor.f_name} ${donor.m_initial || ''} ${donor.l_name}`.trim();
+                const dob = donor.date_of_birth ? new Date(donor.date_of_birth).toLocaleDateString() : 'N/A';
+                const lastDonation = donor.last_day_of_donation ? new Date(donor.last_day_of_donation).toLocaleDateString() : 'N/A';
+
+                html += '<tr>';
+                html += `<td>${donor.donor_id}</td>`;
+                html += `<td>${fullName}</td>`;
+                html += `<td>${dob}</td>`;
+                html += `<td>${donor.phone_number}</td>`;
+                html += `<td>${lastDonation}</td>`;
+                html += `<td>${donor.gender}</td>`;
+                html += `<td>${donor.bloodbank_name || 'N/A'}</td>`;
+                html += `<td>
+                    <button onclick="editDonor(${donor.donor_id})">Edit</button>
+                    <button onclick="deleteDonor(${donor.donor_id})">Delete</button>
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            div.innerHTML = html;
+        }
+
+        async function loadBloodBanks() {
+            try {
+                const response = await fetch('/api/bloodbanks');
+                const bloodbanks = await response.json();
+                const select = document.getElementById('edit_bb_id');
+
+                bloodbanks.forEach(bb => {
+                    const option = document.createElement('option');
+                    option.value = bb.bloodbank_id;
+                    option.textContent = bb.bloodbank_name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading blood banks:', error);
+            }
+        }
+
+        async function editDonor(id) {
+            try {
+                const response = await fetch(`/api/donors/${id}`);
+                const donor = await response.json();
+
+                document.getElementById('edit_id').value = donor.donor_id;
+                document.getElementById('edit_f_name').value = donor.f_name || '';
+                document.getElementById('edit_m_initial').value = donor.m_initial || '';
+                document.getElementById('edit_l_name').value = donor.l_name || '';
+                document.getElementById('edit_date_of_birth').value = donor.date_of_birth ? donor.date_of_birth.split('T')[0] : '';
+                document.getElementById('edit_phone_number').value = donor.phone_number || '';
+                document.getElementById('edit_last_donation_date').value = donor.last_day_of_donation ? donor.last_day_of_donation.split('T')[0] : '';
+                document.getElementById('edit_gender').value = donor.gender || '';
+                document.getElementById('edit_bb_id').value = donor.bb_id || '';
+
+                document.getElementById('editModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading donor:', error);
+                alert('Failed to load donor details');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('edit_id').value;
+            const formData = {
+                f_name: document.getElementById('edit_f_name').value,
+                m_initial: document.getElementById('edit_m_initial').value,
+                l_name: document.getElementById('edit_l_name').value,
+                date_of_birth: document.getElementById('edit_date_of_birth').value,
+                phone_number: document.getElementById('edit_phone_number').value,
+                last_donation_date: document.getElementById('edit_last_donation_date').value,
+                gender: document.getElementById('edit_gender').value,
+                bb_id: document.getElementById('edit_bb_id').value || null
+            };
+
+            try {
+                const response = await fetch(`/api/donors/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Donor updated successfully!');
+                    closeEditModal();
+                    loadDonors();
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to update donor');
+                console.error('Error:', error);
+            }
+        });
+
+        async function deleteDonor(id) {
+            if (!confirm('Are you sure you want to delete this donor?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/donors/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Donor deleted successfully!');
+                    loadDonors();
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to delete donor');
+                console.error('Error:', error);
+            }
+        }
+
+        // Load data on page load
+        loadDonors();
+        loadBloodBanks();
+    </script>
+</body>
+</html>

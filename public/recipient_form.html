@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipient Registration Form</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a> |
+        <a href="donor_form.html">Add Donor</a> |
+        <a href="recipient_form.html">Add Recipient</a> |
+        <a href="institution_setup_form.html">Add Institution</a> |
+        <a href="record_donation_form.html">Record Donation</a> |
+        <a href="search_form.html">Search</a> |
+        <a href="donors.html">View Donors</a> |
+        <a href="recipients.html">View Recipients</a>
+    </nav>
+
+    <h1>Recipient Registration Form</h1>
+
+    <form id="recipientForm">
+        <div>
+            <label for="f_name">First Name:</label>
+            <input type="text" id="f_name" name="f_name" required>
+        </div>
+
+        <div>
+            <label for="m_initial">Middle Initial:</label>
+            <input type="text" id="m_initial" name="m_initial" maxlength="1">
+        </div>
+
+        <div>
+            <label for="l_name">Last Name:</label>
+            <input type="text" id="l_name" name="l_name" required>
+        </div>
+
+        <div>
+            <label for="date_of_birth">Date of Birth:</label>
+            <input type="date" id="date_of_birth" name="date_of_birth" required>
+        </div>
+
+        <div>
+            <label for="blood_type">Blood Type:</label>
+            <select id="blood_type" name="blood_type" required>
+                <option value="">Select Blood Type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="phone_number">Phone Number:</label>
+            <input type="tel" id="phone_number" name="phone_number" required>
+        </div>
+
+        <div>
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required>
+                <option value="">Select Gender</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </select>
+        </div>
+
+        <div>
+            <button type="submit">Register Recipient</button>
+        </div>
+    </form>
+
+    <script>
+        document.getElementById('recipientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                f_name: document.getElementById('f_name').value,
+                m_initial: document.getElementById('m_initial').value,
+                l_name: document.getElementById('l_name').value,
+                date_of_birth: document.getElementById('date_of_birth').value,
+                gender: document.getElementById('gender').value,
+                blood_type: document.getElementById('blood_type').value,
+                phone_number: document.getElementById('phone_number').value
+            };
+
+            try {
+                const response = await fetch('/api/recipients', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Recipient registered successfully!');
+                    document.getElementById('recipientForm').reset();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to register recipient');
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

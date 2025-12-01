@@ -27,6 +27,10 @@ export const pool = new Pool({
 
 // Handle pool errors to prevent crashes
 pool.on('error', (err) => {
+  // Ignore Supabase pooler termination errors (they're expected)
+  if (err.message && err.message.includes('db_termination')) {
+    return; // Silently ignore
+  }
   console.error('Unexpected database pool error (non-fatal):', err.message);
   // Don't crash the process - just log the error
 });

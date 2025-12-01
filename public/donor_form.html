@@ -97,8 +97,8 @@
 
                 bloodbanks.forEach(bb => {
                     const option = document.createElement('option');
-                    option.value = bb.BloodBank_ID;
-                    option.textContent = bb.BloodBank_name;
+                    option.value = bb.bloodbank_id;
+                    option.textContent = bb.bloodbank_name;
                     select.appendChild(option);
                 });
             } catch (error) {

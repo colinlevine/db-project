@@ -71,8 +71,8 @@
 
                 bloodbanks.forEach(bb => {
                     const option = document.createElement('option');
-                    option.value = bb.BloodBank_ID;
-                    option.textContent = bb.BloodBank_name;
+                    option.value = bb.bloodbank_id;
+                    option.textContent = bb.bloodbank_name;
                     select.appendChild(option);
                 });
             } catch (error) {
@@ -132,13 +132,13 @@
 
             results.forEach(row => {
                 html += '<tr>';
-                html += `<td>${row.Blood_ID}</td>`;
-                html += `<td>${row.Blood_Type}</td>`;
-                html += `<td>${row.Quantity_Donated}</td>`;
-                html += `<td>${new Date(row.Expiration_Date).toLocaleDateString()}</td>`;
-                html += `<td>${row.Days_Until_Expiration}</td>`;
-                html += `<td>${row.BloodBank_name}</td>`;
-                html += `<td>${row.Location}</td>`;
+                html += `<td>${row.blood_id}</td>`;
+                html += `<td>${row.blood_type}</td>`;
+                html += `<td>${row.quantity_donated}</td>`;
+                html += `<td>${new Date(row.expiration_date).toLocaleDateString()}</td>`;
+                html += `<td>${row.days_until_expiration}</td>`;
+                html += `<td>${row.bloodbank_name}</td>`;
+                html += `<td>${row.location}</td>`;
                 html += '</tr>';
             });
 

@@ -69,6 +69,85 @@ app.get('/api/hospitals', async (req: Request, res: Response) => {
   }
 });
 
+// Add blood to hospital inventory
+app.post('/api/inventory', async (req: Request, res: Response) => {
+  try {
+    const { orders } = req.body;
+
+    // Validate orders array exists and is not empty
+    if (!orders || !Array.isArray(orders) || orders.length === 0) {
+      return res.status(400).json({ error: 'orders array is required and must not be empty' });
+    }
+
+    let insertedCount = 0;
+    const errors: string[] = [];
+
+    // Process each order
+    for (let i = 0; i < orders.length; i++) {
+      const { bloodID, hospitalID } = orders[i];
+
+      // Validate required fields for this order
+      if (!bloodID || !hospitalID) {
+        errors.push(`Order ${i + 1}: bloodID and hospitalID are required`);
+        continue;
+      }
+
+      try {
+        // Check if blood exists
+        const bloodCheck = await pool.query(
+          'SELECT Blood_ID FROM Blood WHERE Blood_ID = $1',
+          [bloodID]
+        );
+        if (bloodCheck.rows.length === 0) {
+          errors.push(`Order ${i + 1}: Blood ID ${bloodID} not found`);
+          continue;
+        }
+
+        // Check if hospital exists
+        const hospitalCheck = await pool.query(
+          'SELECT Hospital_ID FROM Hospital WHERE Hospital_ID = $1',
+          [hospitalID]
+        );
+        if (hospitalCheck.rows.length === 0) {
+          errors.push(`Order ${i + 1}: Hospital ID ${hospitalID} not found`);
+          continue;
+        }
+
+        // Insert into Hospital_Inventory
+        await pool.query(
+          'INSERT INTO Hospital_Inventory (blood_id, Hospital_ID) VALUES ($1, $2)',
+          [bloodID, hospitalID]
+        );
+        insertedCount++;
+      } catch (error: any) {
+        // Handle duplicate key violation (blood already in hospital inventory)
+        if (error.code === '23505') {
+          errors.push(`Order ${i + 1}: Blood ID ${bloodID} already assigned to Hospital ID ${hospitalID}`);
+        } else {
+          errors.push(`Order ${i + 1}: ${error.message}`);
+        }
+      }
+    }
+
+    // Return response
+    if (insertedCount === 0 && errors.length > 0) {
+      return res.status(400).json({
+        error: 'Failed to insert any orders',
+        details: errors
+      });
+    }
+
+    res.json({
+      message: `Successfully added ${insertedCount} blood unit(s) to hospital inventory`,
+      insertedCount,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (error) {
+    console.error('Error adding to hospital inventory:', error);
+    res.status(500).json({ error: 'Failed to add blood to hospital inventory' });
+  }
+});
+
 // ==================== DONOR ROUTES ====================
 
 // Create donor

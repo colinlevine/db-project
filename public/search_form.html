@@ -176,7 +176,7 @@
 
             let html = '<ul>';
             requestCart.forEach((item, index) => {
-                html += `<li>${item.quantityDonated} units of ${item.bloodType} from ${item.bloodbank_name}<button onclick="removeFromCart(${index})">Remove</button></li>`;
+                html += `<li>${item.quantityDonated} units of ${item.bloodType} from ${item.bloodbankName}<button onclick="removeFromCart(${index})">Remove</button></li>`;
             });
             html += '</ul>';
 

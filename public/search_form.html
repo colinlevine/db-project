@@ -146,7 +146,7 @@
                 html += `<td>${row.days_until_expiration}</td>`;
                 html += `<td>${row.bloodbank_name}</td>`;
                 html += `<td>${row.location}</td>`;
-                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.quantity_donated}, '${row.blood_type}', '${row.bloodbank_name}')">[Request]</button></td>`;
+                html += `<td> <button onclick="requestBlood(${row.blood_id}, '${row.blood_type}', ${row.quantity_donated}, '${row.bloodbank_name}')">[Request]</button></td>`;
                 html += `</tr>`;
             });
 
@@ -154,11 +154,11 @@
             resultsDiv.innerHTML = html;
         }
 
-        function requestBlood(bloodID, quantityDonated, bloodType, bloodbankName ) {
+        function requestBlood(bloodID, bloodType, quantityDonated, bloodbankName ) {
             requestCart.push({
                 bloodID,
-                quantityDonated,
                 bloodType,
+                quantityDonated,
                 bloodbankName
             });
             renderCart();
@@ -174,7 +174,7 @@
                 return;
             }
 
-            let html = '<table border="1" style="border-collapse: collapse; width: 100%;">';
+            let html = '<table><thead><tr>';
             html += '<thead><tr>';
             html += '<th>Blood Type</th>';
             html += '<th>Quantity</th>';
@@ -193,7 +193,6 @@
 
             html += '</tbody></table>'
 
-
             cartDiv.innerHTML = html;
             doneButton.style.display = 'inline-block';
             
@@ -203,6 +202,7 @@
             requestCart.splice(index, 1);
             renderCart();
         }
+        
         // Done button sends all requests
         document.getElementById('done-button').addEventListener('click', () => {
             if (requestCart.length === 0) return alert("No blood selected.");

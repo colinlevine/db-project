@@ -146,7 +146,7 @@
                 html += `<td>${row.days_until_expiration}</td>`;
                 html += `<td>${row.bloodbank_name}</td>`;
                 html += `<td>${row.location}</td>`;
-                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.blood_type})">[Request]</td>`;
+                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.quantity_donated}, ${row.blood_type})">[Request]</button></td>`;
                 html += `</tr>`;
             });
 
@@ -154,11 +154,11 @@
             resultsDiv.innerHTML = html;
         }
 
-        function requestBlood(bloodID, bloodType) {
+        function requestBlood(bloodID, quantityDonated, bloodType) {
             requestCart.push({
                 bloodId,
+                quantityDonated,
                 bloodType,
-                units: Number(units)
             });
             renderCart();
         }
@@ -175,7 +175,7 @@
 
             let html = '<ul>';
             requestCart.forEach((item, index) => {
-                html += `<li>${item.units} units of ${item.bloodType} <button onclick="removeFromCart(${index})">Remove</button></li>`;
+                html += `<li>${item.quantityDonated} units of ${item.bloodType} <button onclick="removeFromCart(${index})">Remove</button></li>`;
             });
             html += '</ul>';
 
@@ -194,7 +194,7 @@
 
             let summary = "Confirm sending the following blood to hospital:\n\n";
             requestCart.forEach(item => {
-                summary += `${item.units} units of ${item.bloodType}\n`;
+                summary += `${item.quantityDonated} units of ${item.bloodType}\n`;
             });
 
             const confirmSend = confirm(summary);
@@ -202,7 +202,7 @@
                 fetch('/api/orders/batch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orders: requestCart, hospitalId: 1 }) // replace hospitalId dynamically if needed
+                    body: JSON.stringify({ orders: requestCart, hospitalId: 1 })
                 })
                 .then(res => res.json())
                 .then(data => {

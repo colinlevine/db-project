@@ -90,7 +90,7 @@
 
         async function loadHospitals() {
             try {
-                const response = await fetch('/api/hospital');
+                const response = await fetch('/api/hospitals');
                 const hospitals = await response.json();
                 const select = document.getElementById('hospital_id');
     

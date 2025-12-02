@@ -249,36 +249,29 @@
             // Get selected hospital
             const hospitalSelect = document.getElementById('hospital_id');
             const hospitalID = hospitalSelect ? hospitalSelect.value : null;
-
             if (!hospitalID) return alert("Please select a hospital.");
             
-            let summary = "Confirm sending the following to hospital:\n\n";
+            const confirmSend = confirm(`Send ${requestCart.length} blood items to ${hospitalSelect.options[hospitalSelect.selectedIndex].text}?`);
             requestCart.forEach(item => {
-                summary += `${item.quantityDonated} units of ${item.bloodType}\n`;
+                summary += `${item.quantityDonated} units of ${item.bloodType} from ${item.bloodbankName}\n`;
             });
 
             const confirmSend = confirm(summary);
-            if (confirmSend) {
-                const orders = requestCart.map(item => ({
-                    bloodID: item.bloodID,
-                    hospitalID: hospitalID
-                }));
-                
-                fetch('/api/orders/batch', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orders })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message || 'Orders submitted successfully!');
-                    requestCart.length = 0;
-                    renderCart();
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('Error sending orders');
-                });
+            if (!confirmSend) return;
+            try {
+                for (const item of requestCart) {
+                    await fetch('/api/inventory', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bloodID: item.bloodID, hospitalID })
+                    });
+                }
+                alert('Orders submitted successfully!');
+                requestCart.length = 0;
+                renderCart();
+            } catch (error) {
+                console.error(error);
+                alert('Error sending orders');
             }
         });
         

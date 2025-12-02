@@ -146,7 +146,7 @@
                 html += `<td>${row.days_until_expiration}</td>`;
                 html += `<td>${row.bloodbank_name}</td>`;
                 html += `<td>${row.location}</td>`;
-                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.quantity_donated}, ${row.blood_type})">[Request]</button></td>`;
+                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.quantity_donated}, '${row.blood_type}')">[Request]</button></td>`;
                 html += `</tr>`;
             });
 

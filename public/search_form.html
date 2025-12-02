@@ -63,6 +63,15 @@
 
     <h2>Requested Blood</h2>
     <div id="request-cart"><p>No blood requested yet.</p></div>
+
+    <div>
+            <label for="hospital_id"> Requesting Hospital:</label>
+            <select id="hospital_id" name="hospital_id">
+                <option value="">All Hospitals</option>
+            </select>
+    </div>
+    
+    
     <button id="done-button" style="display:none;">Done</button>
     
     <script>
@@ -83,6 +92,23 @@
                 });
             } catch (error) {
                 console.error('Error loading blood banks:', error);
+            }
+        }
+
+        async function loadHospitals() {
+            try {
+                const response = await fetch('/api/hospital');
+                const bloodbanks = await response.json();
+                const select = document.getElementById('hospital_id');
+
+                bloodbanks.forEach(bb => {
+                    const option = document.createElement('option');
+                    option.value = bb.hospital_id;
+                    option.textContent = bb.hospital_name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading hospitals:', error);
             }
         }
 
@@ -155,6 +181,12 @@
         }
 
         function requestBlood(bloodID, bloodType, quantityDonated, bloodbankName ) {
+            const alreadyInCart = requestCart.some(item => item.bloodID === bloodID);
+            if (alreadyInCart) {
+                alert("This blood is already in the request cart.");
+                return;
+            }
+            
             requestCart.push({
                 bloodID,
                 bloodType,
@@ -176,6 +208,7 @@
 
             let html = '<table><thead><tr>';
             html += '<thead><tr>';
+            html += '<th>Blood ID</th>';
             html += '<th>Blood Type</th>';
             html += '<th>Quantity</th>';
             html += '<th>Blood Bank</th>';
@@ -184,6 +217,7 @@
 
             requestCart.forEach((item, index) => {
                 html += '<tr>';
+                html += `<td>${item.bloodID}</td>`;
                 html += `<td>${item.bloodType}</td>`;
                 html += `<td>${item.quantityDonated}</td>`;
                 html += `<td>${item.bloodbankName}</td>`;
@@ -195,6 +229,8 @@
 
             cartDiv.innerHTML = html;
             doneButton.style.display = 'inline-block';
+
+            loadHospitals()
             
         }
         

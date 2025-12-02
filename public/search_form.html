@@ -63,13 +63,6 @@
 
     <h2>Requested Blood</h2>
     <div id="request-cart"><p>No blood requested yet.</p></div>
-
-    <div>
-            <label for="hospital_id"> Requesting Hospital:</label>
-            <select id="hospital_id" name="hospital_id">
-                <option value="">All Hospitals</option>
-            </select>
-    </div>
     
     
     <button id="done-button" style="display:none;">Done</button>
@@ -98,15 +91,28 @@
         async function loadHospitals() {
             try {
                 const response = await fetch('/api/hospital');
-                const bloodbanks = await response.json();
-                const select = document.getElementById('hospital_id');
+                const hospitals = await response.json();
+                const cartDiv = document.getElementById('request-cart');
 
-                bloodbanks.forEach(bb => {
-                    const option = document.createElement('option');
-                    option.value = bb.hospital_id;
-                    option.textContent = bb.hospital_name;
-                    select.appendChild(option);
-                });
+                //remove duplicates
+                const existing = document.getElementById('hospital_id');
+                if (requestCart.length > 0) {
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <label for="hospital_id">Requesting Hospital:</label>
+                        <select id="hospital_id" name="hospital_id">
+                        <option value="">Select Hospital</option>
+                        </select>`;
+                    cartDiv.appendChild(div); // append after the table
+
+                    const select = div.querySelector('select');
+                    hospitals.forEach(hospital => {
+                        const option = document.createElement('option');
+                        option.value = hospital.hospital_id;
+                        option.textContent = hospital.hospital_name;
+                        select.appendChild(option);
+                    });
+                }
             } catch (error) {
                 console.error('Error loading hospitals:', error);
             }

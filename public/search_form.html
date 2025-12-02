@@ -246,17 +246,28 @@
         document.getElementById('done-button').addEventListener('click', () => {
             if (requestCart.length === 0) return alert("No blood selected.");
 
-            let summary = "Confirm sending the following blood to hospital:\n\n";
+            // Get selected hospital
+            const hospitalSelect = document.getElementById('hospital_id');
+            const hospitalID = hospitalSelect ? hospitalSelect.value : null;
+
+            if (!hospitalID) return alert("Please select a hospital.");
+            
+            let summary = "Confirm sending the following to hospital:\n\n";
             requestCart.forEach(item => {
                 summary += `${item.quantityDonated} units of ${item.bloodType}\n`;
             });
 
             const confirmSend = confirm(summary);
             if (confirmSend) {
+                const orders = requestCart.map(item => ({
+                    bloodID: item.bloodID,
+                    hospitalID: hospitalID
+                }));
+                
                 fetch('/api/orders/batch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orders: requestCart, hospitalId: 1 })
+                    body: JSON.stringify({ orders })
                 })
                 .then(res => res.json())
                 .then(data => {

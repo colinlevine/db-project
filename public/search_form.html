@@ -146,7 +146,7 @@
                 html += `<td>${row.days_until_expiration}</td>`;
                 html += `<td>${row.bloodbank_name}</td>`;
                 html += `<td>${row.location}</td>`;
-                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.quantity_donated}, '${row.blood_type}')">[Request]</button></td>`;
+                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.quantity_donated}, '${row.blood_type}', '${row.bloodbank_name}')">[Request]</button></td>`;
                 html += `</tr>`;
             });
 
@@ -154,11 +154,12 @@
             resultsDiv.innerHTML = html;
         }
 
-        function requestBlood(bloodID, quantityDonated, bloodType) {
+        function requestBlood(bloodID, quantityDonated, bloodType, bloodbankName ) {
             requestCart.push({
                 bloodID,
                 quantityDonated,
                 bloodType,
+                bloodbankName
             });
             renderCart();
         }
@@ -175,7 +176,7 @@
 
             let html = '<ul>';
             requestCart.forEach((item, index) => {
-                html += `<li>${item.quantityDonated} units of ${item.bloodType} <button onclick="removeFromCart(${index})">Remove</button></li>`;
+                html += `<li>${item.quantityDonated} units of ${item.bloodType} from ${item.bloodbank_name}<button onclick="removeFromCart(${index})">Remove</button></li>`;
             });
             html += '</ul>';
 

@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS Recipient CASCADE;
 DROP TABLE IF EXISTS Donor CASCADE;
 DROP TABLE IF EXISTS Hospital CASCADE;
 DROP TABLE IF EXISTS BloodBank CASCADE;
+DROP TABLE IF EXISTS Hospital_Inventory CASCADE;
 
 CREATE TABLE BloodBank (
     BloodBank_ID SERIAL PRIMARY KEY,
@@ -57,6 +58,14 @@ CREATE TABLE Recipient (
     Gender CHAR(1),
     Blood_Type VARCHAR(3),
     Phone_Number VARCHAR(15)
+);
+
+CREATE TABLE Hospital_Inventory (
+    blood_id INTEGER,
+    Hospital_ID INTEGER,
+    PRIMARY KEY (blood_id, Hospital_ID),
+    FOREIGN KEY (blood_id) REFERENCES blood(blood_id),
+    FOREIGN KEY (Hospital_ID) REFERENCES Hospital(Hospital_ID)
 );
 
 CREATE TABLE Stored_To (

@@ -61,8 +61,14 @@
     <h2>Search Results</h2>
     <div id="results"></div>
 
+    <h2>Requested Blood</h2>
+    <div id="request-cart"><p>No blood requested yet.</p></div>
+    <button id="done-button" style="display:none;">Done</button>
+    
     <script>
         // Load blood banks
+        const requestCart = [];
+        
         async function loadBloodBanks() {
             try {
                 const response = await fetch('/api/bloodbanks');
@@ -128,6 +134,7 @@
             html += '<th>Days Until Expiration</th>';
             html += '<th>Blood Bank</th>';
             html += '<th>Location</th>';
+            html += '<th>Action</th>';
             html += '</tr></thead><tbody>';
 
             results.forEach(row => {
@@ -139,15 +146,81 @@
                 html += `<td>${row.days_until_expiration}</td>`;
                 html += `<td>${row.bloodbank_name}</td>`;
                 html += `<td>${row.location}</td>`;
-                html += '</tr>';
+                html += `<td> <button onclick="requestBlood(${row.blood_id}, ${row.blood_type})">[Request]</td>`;
+                html += `</tr>`;
             });
 
             html += '</tbody></table>';
             resultsDiv.innerHTML = html;
         }
 
+        function requestBlood(bloodID, bloodType) {
+            requestCart.push({
+                bloodId,
+                bloodType,
+                units: Number(units)
+            });
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartDiv = document.getElementById('request-cart');
+            const doneButton = document.getElementById('done-button');
+
+            if (requestCart.length === 0) {
+                cartDiv.innerHTML = '<p>No blood requested yet.</p>';
+                doneButton.style.display = 'none';
+                return;
+            }
+
+            let html = '<ul>';
+            requestCart.forEach((item, index) => {
+                html += `<li>${item.units} units of ${item.bloodType} <button onclick="removeFromCart(${index})">Remove</button></li>`;
+            });
+            html += '</ul>';
+
+            cartDiv.innerHTML = html;
+            doneButton.style.display = 'inline-block';
+            
+        }
+        
+        function removeFromCart(index) {
+            requestCart.splice(index, 1);
+            renderCart();
+        }
+        // Done button sends all requests
+        document.getElementById('done-button').addEventListener('click', () => {
+            if (requestCart.length === 0) return alert("No blood selected.");
+
+            let summary = "Confirm sending the following blood to hospital:\n\n";
+            requestCart.forEach(item => {
+                summary += `${item.units} units of ${item.bloodType}\n`;
+            });
+
+            const confirmSend = confirm(summary);
+            if (confirmSend) {
+                fetch('/api/orders/batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orders: requestCart, hospitalId: 1 }) // replace hospitalId dynamically if needed
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Orders submitted successfully!');
+                    requestCart.length = 0;
+                    renderCart();
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error sending orders');
+                });
+            }
+        });
+        
+
         // Load blood banks when page loads
         loadBloodBanks();
+        renderCart(); //initially empty
     </script>
 </body>
 </html>

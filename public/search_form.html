@@ -174,11 +174,25 @@
                 return;
             }
 
-            let html = '<ul>';
+            let html = '<table border="1" style="border-collapse: collapse; width: 100%;">';
+            html += '<thead><tr>';
+            html += '<th>Blood Type</th>';
+            html += '<th>Quantity</th>';
+            html += '<th>Blood Bank</th>';
+            html += '<th>Action</th>';
+            html += '</tr></thead><tbody>';
+
             requestCart.forEach((item, index) => {
-                html += `<li>${item.quantityDonated} units of ${item.bloodType} from ${item.bloodbankName}<button onclick="removeFromCart(${index})">Remove</button></li>`;
+                html += '<tr>';
+                html += `<td>${item.bloodType}</td>`;
+                html += `<td>${item.quantityDonated}</td>`;
+                html += `<td>${item.bloodbankName}</td>`;
+                html += `<td><button type="button" onclick="removeFromCart(${index})">Remove</button></td>`;
+                html += '</tr>';
             });
-            html += '</ul>';
+
+            html += '</tbody></table>'
+
 
             cartDiv.innerHTML = html;
             doneButton.style.display = 'inline-block';

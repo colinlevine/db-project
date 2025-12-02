@@ -92,7 +92,7 @@
             try {
                 const response = await fetch('/api/hospital');
                 const hospitals = await response.json();
-                const select = document.getElementById('hospital-id');
+                const select = document.getElementById('hospital_id');
     
                 hospitals.forEach(hospital => {
                     const option = document.createElement('option');

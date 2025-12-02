@@ -69,43 +69,6 @@ app.get('/api/hospitals', async (req: Request, res: Response) => {
   }
 });
 
-// Add to Hospital Inventory
-// Add blood to hospital inventory
-app.post('/api/inventory', async (req: Request, res: Response) => {
-  try {
-    const { bloodID, hospitalID } = req.body;
-    if (!bloodID || !hospitalID) {
-      return res.status(400).json({ error: 'bloodID and hospitalID are required' });
-    }
-
-    // check bloodID exists
-    const bloodCheck = await pool.query(
-      'SELECT Blood_ID FROM Blood WHERE Blood_ID = $1',
-      [bloodID]);
-    if (bloodCheck.rows.length === 0) {
-      return res.status(404).json({ error: 'Blood not found' });
-    }
-
-    // check hospitalID exists
-    const hospitalCheck = await pool.query(
-      'SELECT Hospital_ID FROM Hospital WHERE Hospital_ID = $1',
-      [hospitalID]);
-    if (hospitalCheck.rows.length === 0) {
-      return res.status(404).json({ error: 'Hospital not found' });
-    }
-    const result = await pool.query(
-      'INSERT INTO hospital_inventory (Blood_ID, Hospital_ID) VALUES ($1, $2) RETURNING *',
-      [bloodID, hospitalID]
-    );
-
-    res.json({ message: 'Donation added to hospital inventory', data: result.rows[0] });
-    } catch (error) {
-      console.error('Error adding to hospital inventory:', error);
-      res.status(500).json({ error: 'Failed to add blood to hospital inventory' });
-    }
-    });
-
-
 // ==================== DONOR ROUTES ====================
 
 // Create donor

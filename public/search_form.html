@@ -92,27 +92,14 @@
             try {
                 const response = await fetch('/api/hospital');
                 const hospitals = await response.json();
-                const cartDiv = document.getElementById('request-cart');
-
-                //remove duplicates
-                const existing = document.getElementById('hospital_id');
-                if (requestCart.length > 0) {
-                    const div = document.createElement('div');
-                    div.innerHTML = `
-                        <label for="hospital_id">Requesting Hospital:</label>
-                        <select id="hospital_id" name="hospital_id">
-                        <option value="">Select Hospital</option>
-                        </select>`;
-                    cartDiv.appendChild(div); // append after the table
-
-                    const select = div.querySelector('select');
-                    hospitals.forEach(hospital => {
-                        const option = document.createElement('option');
-                        option.value = hospital.hospital_id;
-                        option.textContent = hospital.hospital_name;
-                        select.appendChild(option);
-                    });
-                }
+                const select = document.getElementById('hospital-id');
+    
+                hospitals.forEach(hospital => {
+                    const option = document.createElement('option');
+                    option.value = hospital.hospital_id;
+                    option.textContent = hospital.hospital_name;
+                    select.appendChild(option);
+                });
             } catch (error) {
                 console.error('Error loading hospitals:', error);
             }
@@ -236,7 +223,17 @@
             cartDiv.innerHTML = html;
             doneButton.style.display = 'inline-block';
 
-            loadHospitals()
+            // Load hospital dropdown only if it doesn't exist yet
+            if (!document.getElementById('hospital_id')) {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label for="hospital_id">Requesting Hospital:</label>
+                    <select id="hospital_id" name="hospital_id">
+                        <option value="">Select Hospital</option>
+                    </select>`;
+                cartDiv.appendChild(div);
+                loadHospitals();
+            }
             
         }
         
